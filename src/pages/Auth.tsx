@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FloatingFood } from '@/components/FloatingFood';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import logo from '@/assets/logo.png';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
   const [loginEmail, setLoginEmail] = useState('');
@@ -15,17 +17,86 @@ const Auth = () => {
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Check if user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/dashboard');
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        navigate('/dashboard');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login:', { loginEmail, loginPassword });
-    // TODO: Implement actual authentication
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "You've been logged in successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Signup:', { signupName, signupEmail, signupPassword });
-    // TODO: Implement actual authentication
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: signupEmail,
+        password: signupPassword,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: signupName,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Account created!",
+        description: "You've been signed up successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Signup failed",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -82,8 +153,8 @@ const Auth = () => {
                   className="bg-background"
                 />
               </div>
-              <Button type="submit" className="w-full btn-3d bg-primary hover:bg-primary/90">
-                Login
+              <Button type="submit" className="w-full btn-3d bg-primary hover:bg-primary/90" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
           </TabsContent>
@@ -126,8 +197,8 @@ const Auth = () => {
                   className="bg-background"
                 />
               </div>
-              <Button type="submit" className="w-full btn-3d bg-primary hover:bg-primary/90">
-                Create Account
+              <Button type="submit" className="w-full btn-3d bg-primary hover:bg-primary/90" disabled={loading}>
+                {loading ? 'Creating account...' : 'Create Account'}
               </Button>
             </form>
           </TabsContent>
