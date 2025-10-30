@@ -13,44 +13,50 @@ const MealPlanner = () => {
   const [selectedDay, setSelectedDay] = useState('monday');
   const [dietType, setDietType] = useState('balanced');
 
-  const mealSuggestions = [
-    {
-      name: 'Avocado Toast with Poached Eggs',
-      type: 'Breakfast',
-      calories: 350,
-      protein: '18g',
-      time: '15 min',
-      sustainable: true,
-      price: '₹120',
-    },
-    {
-      name: 'Mediterranean Quinoa Bowl',
-      type: 'Lunch',
-      calories: 480,
-      protein: '22g',
-      time: '25 min',
-      sustainable: true,
-      price: '₹180',
-    },
-    {
-      name: 'Grilled Salmon with Vegetables',
-      type: 'Dinner',
-      calories: 520,
-      protein: '35g',
-      time: '30 min',
-      sustainable: false,
-      price: '₹350',
-    },
-    {
-      name: 'Greek Yogurt with Berries',
-      type: 'Snack',
-      calories: 180,
-      protein: '12g',
-      time: '5 min',
-      sustainable: true,
-      price: '₹80',
-    },
-  ];
+  const suggestionsByDay: Record<string, Array<{ name: string; type: string; calories: number; protein: string; time: string; sustainable: boolean; price: string }>> = {
+    monday: [
+      { name: 'Avocado Toast with Poached Eggs', type: 'Breakfast', calories: 350, protein: '18g', time: '15 min', sustainable: true, price: '₹120' },
+      { name: 'Mediterranean Quinoa Bowl', type: 'Lunch', calories: 480, protein: '22g', time: '25 min', sustainable: true, price: '₹180' },
+      { name: 'Grilled Salmon with Vegetables', type: 'Dinner', calories: 520, protein: '35g', time: '30 min', sustainable: false, price: '₹350' },
+      { name: 'Greek Yogurt with Berries', type: 'Snack', calories: 180, protein: '12g', time: '5 min', sustainable: true, price: '₹80' },
+    ],
+    tuesday: [
+      { name: 'Oats Porridge with Banana', type: 'Breakfast', calories: 320, protein: '10g', time: '10 min', sustainable: true, price: '₹60' },
+      { name: 'Paneer Tikka Salad', type: 'Lunch', calories: 450, protein: '28g', time: '20 min', sustainable: true, price: '₹160' },
+      { name: 'Chicken Stir Fry with Brown Rice', type: 'Dinner', calories: 540, protein: '38g', time: '25 min', sustainable: false, price: '₹300' },
+      { name: 'Roasted Chana', type: 'Snack', calories: 150, protein: '8g', time: '5 min', sustainable: true, price: '₹40' },
+    ],
+    wednesday: [
+      { name: 'Masala Omelette', type: 'Breakfast', calories: 300, protein: '20g', time: '10 min', sustainable: true, price: '₹50' },
+      { name: 'Dal Khichdi with Salad', type: 'Lunch', calories: 480, protein: '16g', time: '30 min', sustainable: true, price: '₹120' },
+      { name: 'Tofu Curry with Quinoa', type: 'Dinner', calories: 510, protein: '30g', time: '30 min', sustainable: true, price: '₹220' },
+      { name: 'Peanut Butter Apple Slices', type: 'Snack', calories: 200, protein: '7g', time: '5 min', sustainable: true, price: '₹70' },
+    ],
+    thursday: [
+      { name: 'Idli with Sambar', type: 'Breakfast', calories: 330, protein: '12g', time: '20 min', sustainable: true, price: '₹80' },
+      { name: 'Grilled Veg Sandwich', type: 'Lunch', calories: 420, protein: '14g', time: '15 min', sustainable: true, price: '₹110' },
+      { name: 'Fish Curry with Rice', type: 'Dinner', calories: 560, protein: '36g', time: '35 min', sustainable: false, price: '₹340' },
+      { name: 'Buttermilk', type: 'Snack', calories: 90, protein: '4g', time: '2 min', sustainable: true, price: '₹30' },
+    ],
+    friday: [
+      { name: 'Smoothie Bowl', type: 'Breakfast', calories: 320, protein: '12g', time: '10 min', sustainable: true, price: '₹100' },
+      { name: 'Chickpea Buddha Bowl', type: 'Lunch', calories: 470, protein: '24g', time: '25 min', sustainable: true, price: '₹150' },
+      { name: 'Pasta in Tomato Basil Sauce', type: 'Dinner', calories: 530, protein: '18g', time: '25 min', sustainable: true, price: '₹200' },
+      { name: 'Protein Bar', type: 'Snack', calories: 220, protein: '15g', time: '—', sustainable: true, price: '₹120' },
+    ],
+    saturday: [
+      { name: 'Paratha with Curd', type: 'Breakfast', calories: 380, protein: '10g', time: '20 min', sustainable: true, price: '₹90' },
+      { name: 'Chicken Caesar Wrap', type: 'Lunch', calories: 520, protein: '32g', time: '20 min', sustainable: false, price: '₹220' },
+      { name: 'Stir-Fried Veggies + Tofu', type: 'Dinner', calories: 490, protein: '28g', time: '20 min', sustainable: true, price: '₹180' },
+      { name: 'Cucumber Sticks with Hummus', type: 'Snack', calories: 160, protein: '6g', time: '5 min', sustainable: true, price: '₹70' },
+    ],
+    sunday: [
+      { name: 'Pancakes with Honey', type: 'Breakfast', calories: 400, protein: '12g', time: '20 min', sustainable: true, price: '₹130' },
+      { name: 'Veg Biryani + Raita', type: 'Lunch', calories: 600, protein: '16g', time: '40 min', sustainable: true, price: '₹200' },
+      { name: 'Roast Chicken with Greens', type: 'Dinner', calories: 580, protein: '40g', time: '40 min', sustainable: false, price: '₹360' },
+      { name: 'Fruit Salad', type: 'Snack', calories: 180, protein: '3g', time: '5 min', sustainable: true, price: '₹90' },
+    ],
+  };
 
   const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -136,7 +142,7 @@ const MealPlanner = () => {
             </div>
 
             <div className="space-y-4">
-              {mealSuggestions.map((meal, index) => (
+              {(suggestionsByDay[selectedDay] || []).map((meal, index) => (
                 <Card key={index} className="p-4 bg-background border-border hover:border-primary transition-colors">
                   <div className="flex items-start justify-between mb-2">
                     <div>
