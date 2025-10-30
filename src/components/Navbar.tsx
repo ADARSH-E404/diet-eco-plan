@@ -1,12 +1,29 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { Menu, X, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import logo from '@/assets/logo.png';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -18,6 +35,23 @@ export const Navbar = () => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out",
+        description: "You've been logged out successfully.",
+      });
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border">
@@ -46,16 +80,29 @@ export const Navbar = () => {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/profile">
-              <Button variant="ghost" className="btn-3d">
-                Profile
-              </Button>
-            </Link>
-            <Link to="/auth">
-              <Button className="btn-3d bg-primary hover:bg-primary/90">
-                Get Started
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link to="/profile">
+                  <Button variant="ghost" className="btn-3d">
+                    Profile
+                  </Button>
+                </Link>
+                <Button 
+                  onClick={handleLogout}
+                  variant="outline" 
+                  className="btn-3d"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Link to="/auth">
+                <Button className="btn-3d bg-primary hover:bg-primary/90">
+                  Get Started
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -83,16 +130,32 @@ export const Navbar = () => {
               </Link>
             ))}
             <div className="pt-3 space-y-2">
-              <Link to="/profile" onClick={() => setIsOpen(false)} className="block">
-                <Button variant="ghost" className="w-full">
-                  Profile
-                </Button>
-              </Link>
-              <Link to="/auth" onClick={() => setIsOpen(false)} className="block">
-                <Button className="w-full bg-primary">
-                  Get Started
-                </Button>
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link to="/profile" onClick={() => setIsOpen(false)} className="block">
+                    <Button variant="ghost" className="w-full">
+                      Profile
+                    </Button>
+                  </Link>
+                  <Button 
+                    onClick={() => {
+                      setIsOpen(false);
+                      handleLogout();
+                    }}
+                    variant="outline" 
+                    className="w-full"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <Link to="/auth" onClick={() => setIsOpen(false)} className="block">
+                  <Button className="w-full bg-primary">
+                    Get Started
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         )}

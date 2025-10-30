@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,19 +6,90 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Navbar } from '@/components/Navbar';
 import { FloatingFood } from '@/components/FloatingFood';
-import { User, Mail, Phone, MapPin, Calendar, Save, Camera } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Save, Camera } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-  const [name, setName] = useState('John Doe');
-  const [email, setEmail] = useState('john.doe@example.com');
-  const [phone, setPhone] = useState('+91 98765 43210');
-  const [location, setLocation] = useState('Mumbai, India');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [location, setLocation] = useState('');
   const [dietPreference, setDietPreference] = useState('balanced');
   const [calorieGoal, setCalorieGoal] = useState('2000');
+  const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSave = () => {
-    console.log('Saving profile...', { name, email, phone, location, dietPreference, calorieGoal });
+  useEffect(() => {
+    const loadProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+
+      setUserId(session.user.id);
+      setEmail(session.user.email || '');
+
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading profile:', error);
+        return;
+      }
+
+      if (profile) {
+        setName(profile.full_name || '');
+        setPhone(profile.phone || '');
+        setLocation(profile.location || '');
+        setDietPreference(profile.diet_preference || 'balanced');
+        setCalorieGoal(profile.calorie_goal?.toString() || '2000');
+      }
+    };
+
+    loadProfile();
+  }, [navigate]);
+
+  const handleSave = async () => {
+    if (!userId) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: name,
+          phone,
+          location,
+          diet_preference: dietPreference,
+          calorie_goal: parseInt(calorieGoal),
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Your profile has been updated.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const achievements = [
@@ -53,15 +124,15 @@ const Profile = () => {
             <div className="flex items-center gap-6 mb-8 pb-6 border-b border-border">
               <div className="relative">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-3xl font-bold">
-                  JD
+                  {name ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U'}
                 </div>
                 <button className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center btn-3d">
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
               <div>
-                <h3 className="text-xl font-semibold">{name}</h3>
-                <p className="text-muted-foreground">Member since January 2025</p>
+                <h3 className="text-xl font-semibold">{name || 'User'}</h3>
+                <p className="text-muted-foreground">{email}</p>
               </div>
             </div>
 
@@ -156,9 +227,13 @@ const Profile = () => {
                 </div>
               </div>
 
-              <Button onClick={handleSave} className="w-full btn-3d bg-primary hover:bg-primary/90 mt-6">
+              <Button 
+                onClick={handleSave} 
+                className="w-full btn-3d bg-primary hover:bg-primary/90 mt-6"
+                disabled={loading}
+              >
                 <Save className="w-4 h-4" />
-                Save Changes
+                {loading ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </Card>
