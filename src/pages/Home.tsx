@@ -57,10 +57,10 @@ const Home = () => {
       >
         <div className="container mx-auto px-4 text-center z-10">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 glow-text">
-            Smart Diet & Grocery Planning
+            Smart Diet & Grocery Planner
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Plan healthy meals, shop sustainably, and track your environmental impact—all in one platform
+            AI-powered meal planning, smart grocery lists, and sustainable shopping—all in Indian Rupees (₹)
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/auth">
@@ -127,7 +127,7 @@ const Home = () => {
       {/* Footer */}
       <footer className="py-8 border-t border-border relative z-10">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2025 NutriPlan. All rights reserved. Making the world healthier and greener.</p>
+          <p>&copy; 2025 HealthyCart. All rights reserved. Making the world healthier and greener.</p>
         </div>
       </footer>
     </div>
