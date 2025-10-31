@@ -11,6 +11,7 @@ import GroceryList from "./pages/GroceryList";
 import ShoppingGuide from "./pages/ShoppingGuide";
 import Profile from "./pages/Profile";
 import Statistics from "./pages/Statistics";
+import DailyTracker from "./pages/DailyTracker";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/shopping-guide" element={<ShoppingGuide />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/statistics" element={<Statistics />} />
+          <Route path="/daily-tracker" element={<DailyTracker />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

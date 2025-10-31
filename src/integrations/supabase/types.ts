@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_entries: {
+        Row: {
+          calories: number | null
+          created_at: string
+          entry_date: string
+          food_name: string
+          id: string
+          meal_type: string
+          notes: string | null
+          quantity: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calories?: number | null
+          created_at?: string
+          entry_date?: string
+          food_name: string
+          id?: string
+          meal_type: string
+          notes?: string | null
+          quantity?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calories?: number | null
+          created_at?: string
+          entry_date?: string
+          food_name?: string
+          id?: string
+          meal_type?: string
+          notes?: string | null
+          quantity?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           calorie_goal: number | null

@@ -28,6 +28,7 @@ export const Navbar = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Daily Tracker', path: '/daily-tracker' },
     { name: 'Meal Planner', path: '/meal-planner' },
     { name: 'Grocery List', path: '/grocery-list' },
     { name: 'Shopping Guide', path: '/shopping-guide' },
